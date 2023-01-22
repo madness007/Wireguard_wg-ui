@@ -20,8 +20,7 @@ services:
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
     ports:
-      # - 1194:51820/udp
-      - 1195:51820/udp
+      - 1194:1194/udp
     restart: always
     volumes:
       - /lib/modules:/lib/modules
@@ -33,21 +32,18 @@ services:
     #   - NET_ADMIN
     # network_mode: host
     ports:
-      - 8123:5000
+      - 5000:5000
     environment:
       - WGUI_USERNAME=${WGUI_USERNAME}
       - WGUI_PASSWORD=${WGUI_PASSWORD}
-      # - SENDGRID_API_KEY
-      # - EMAIL_FROM_ADDRESS
-      # - EMAIL_FROM_NAME
       - SESSION_SECRET=${SESSION_SECRET}
       - WGUI_ENDPOINT_ADDRESS=${SERVERURL}
-      - WGUI_SERVER_INTERFACE_ADDRESSES=10.252.1.0/24
+      - WGUI_SERVER_INTERFACE_ADDRESSES=${INTERNAL_SUBNET}
       - WGUI_SERVER_LISTEN_PORT=${SERVERPORT}
       - WGUI_MANAGE_START=false
       - WGUI_MANAGE_RESTART=false
-      - WGUI_SERVER_POST_UP_SCRIPT
-      - WGUI_SERVER_POST_DOWN_SCRIPT
+      - WGUI_SERVER_POST_UP_SCRIPT=iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth+ -j MASQUERADE
+      - WGUI_SERVER_POST_DOWN_SCRIPT=iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth+ -j MASQUERADE
     volumes:
       - ./wg-ui-db:/app/db
       - ./wg-server:/etc/wireguard
