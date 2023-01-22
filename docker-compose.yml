@@ -1,12 +1,15 @@
 version: "3"
 services:
   wireguard:
-    image: linuxserver/wireguard:latest
+    # image: linuxserver/wireguard:latest
+    build: ./build_wireguard
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
     environment:
       - TZ=Europe/Brussels
+      - PUID=${USERID}
+      - PGID=${USERID}
       - PEERS=0
       - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       - HOME=/root
@@ -16,31 +19,31 @@ services:
       - DEBIAN_FRONTEND=noninteractive
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
-    # ports:
-    #   - 1194:51820/udp
+    ports:
+      # - 1194:51820/udp
+      - 1195:51820/udp
     restart: always
     volumes:
       - /lib/modules:/lib/modules
-      # - ./wg-server:/config
-  wg-ui:
-    # build: .
+      - ./wg-server:/config:ro
+  ui:
     image: ngoduykhanh/wireguard-ui:latest
-    container_name: wgui
+    user: ${USERID}:${USERID}
     # cap_add:
     #   - NET_ADMIN
     # network_mode: host
     ports:
       - 8123:5000
     environment:
-      - WGUI_USERNAME=alpha
-      - WGUI_PASSWORD=this-unusual-password
+      - WGUI_USERNAME=${WGUI_USERNAME}
+      - WGUI_PASSWORD=${WGUI_PASSWORD}
       # - SENDGRID_API_KEY
       # - EMAIL_FROM_ADDRESS
       # - EMAIL_FROM_NAME
       - SESSION_SECRET=${SESSION_SECRET}
-      - WGUI_ENDPOINT_ADDRESS
+      - WGUI_ENDPOINT_ADDRESS=${SERVERURL}
       - WGUI_SERVER_INTERFACE_ADDRESSES=10.252.1.0/24
-      - WGUI_SERVER_LISTEN_PORT=51820
+      - WGUI_SERVER_LISTEN_PORT=${SERVERPORT}
       - WGUI_MANAGE_START=false
       - WGUI_MANAGE_RESTART=false
       - WGUI_SERVER_POST_UP_SCRIPT
