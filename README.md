@@ -8,6 +8,12 @@ IMPORTANT: make sure the ui is not available for non admins.
 
 configuration with a local private key (without transfering the key) is also possible. Just enter the pub key when generating a new client in the ui.
 
+the status page does not work. this is because the ui expects the wireguard server to run on the host server with privileged mode.
+to see a status of conected clients, enter this command
+```sh
+docker compose exec wireguard wg show
+```
+
 ## installation
 
 1. make the .env file
